@@ -1,0 +1,47 @@
+#Kubectl and minikube must be started before beginning
+
+###Install Argo CD###
+
+# creating the namespace to hold the cluster
+kubectl create namespace argocd
+# creates the resource in the manifest file, based on the file at the given link
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+### argocd was installed seperately on powershell ###
+
+### connecting ArgoCD to the API server using port forwarding ###
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+### logging in ###
+
+#gets temp password
+argocd admin initial-password -n argocd
+
+#can also login from the web if UI is preferred
+argocd admin initial-password -n argocd
+
+#change the current password
+argocd account update-password
+
+### registering the cluster to deploy apps ###
+
+#lists the current clusters
+kubectl config get-contexts -o name
+
+#sets the cluster name 
+argocd cluster add docker-desktop
+
+### creating an app ###
+
+#change to current namespace 
+kubectl config set-context --current --namespace=argocd
+
+#creating the sample app
+argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
+
+### checking the stats ###
+argocd app get guestbook
+
+# sync the app
+
+argocd app sync guestbook
